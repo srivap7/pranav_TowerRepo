@@ -2,6 +2,8 @@
 - name: Fixing Booing Issue Via Ansible Tower
   hosts: all
   become: true
+  vars:
+          - Disk_Name: /dev/sdb
   tasks:
   - name: Checking Disk is in User ot Not?
     shell: |
@@ -71,6 +73,10 @@
     shell: |
              grub2-mkconfig -o /boot/grub2/grub.cfg
     ignore_errors: Yes
+  - name: Mounting "{{ Partition_Name.stdout }}" to /boot_New
+    mount:
+            path: /boot_New
+            state: unmounted
   - name: Taking FSTAB backup
     copy:
            src: /etc/fstab
@@ -97,12 +103,3 @@
             line: "{{ new_Boot.stdout }} \t /boot \t ext3 \t defaults \t 1  2"
             state: present
             backup: yes
-  - name: Mounting "{{ Partition_Name.stdout }}" to /boot_New
-    mount:
-            path: /boot_New
-            state: unmounted
-            #  - name: Reboot is Required for Server "{{ inventory_hostname }}"
-            #    reboot:
-            #            reboot_timeout: 360
-            #            msg: "Please Chnage the Boot Order in BIOS..."
- 
