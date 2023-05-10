@@ -14,15 +14,15 @@
                       echo -e "\nServer's uptime\n"
                       uptime
                       echo -e "Kernel Version"
-                      echo -e "~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~\n"
                       uname -r
                       uname -a
                       echo -e "Server's Hostname"
-                      echo -e "~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~\n"
                       hostname
                       echo -e "\n";
                       echo -e "\nOS Version"
-                      echo -e "~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~\n"
                       find /etc/redhat-release -type f -print -exec cat {} \;
                       echo -e "\n"
                       find /etc/os-release -type f -print -exec cat {} \;
@@ -31,89 +31,89 @@
     register: Server_Details
   - name: Taking CPU Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ CPU Utilization ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ CPU Utilization ################\n"
                       echo -e "Server's CPU State(vmstat)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~\n"
                       vmstat
                       echo -e "\n"
                       echo -e "\n"
                       echo -e "Server's All Running Proccess (ps -ef)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       ps -ef
                       echo -e "\n"
                       echo -e "Server's All Proccess (ps -aux)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       ps aux
                       echo -e "\n"
                       echo -e "Server's All Proccess (ps -aN --format cmd,pid,user,ppid)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       ps -aN --format cmd,pid,user,ppid
                       echo -e "\n"
-                      echo -e "#################################################################"
+                      echo -e "\n#################################################################\n"
     register: CPU_Utilization
   - name: Taking Memory Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ Memory Utilization ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ Memory Utilization ################\n"
                       echo -e "Server's All Memory Status (free -h)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       free -h
                       echo -e "\n"
                       echo -e "Server's All Memory Status (free -g)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       free -g
                       echo -e "\n"
                       echo -e "Server's All Memory Status (free -m)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       free -m
                       echo -e "\n"
                       echo -e "Server's All Memory Status (free -b)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       free -b
                       echo -e "\n"
-                      echo -e "#################################################################\n"
+                      echo -e "\n#################################################################\n"
     register: Memory_Utilization
   - name: Taking Servers Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ init.d Files ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ init.d Files ################\n"
                       echo -e "Server's init.d Backup (Path: /etc/init.d/*)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       echo -e "\n"
                       find /etc/init.d/ -type f -print
                       echo -e "\n"
                       echo -e "\n"
                       find /etc/init.d/* -type f -print -exec cat {} \;
-                      echo -e "#################################################################"
+                      echo -e "\n#################################################################\n"
     register: init_d_Files
   - name: Taking Configuration Files Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ Configuartion Files ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ Configuartion Files ################\n"
                       echo -e "Server's Hostname, Host.conf and Hosts Files Backup"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/host* -type f -print -exec cat {} \;
                       echo -e "\n"
                       echo -e "Server's Resolve Conf"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/resolv.conf -type f -print -exec cat {} \;
                       echo -e "\n"
                       echo -e "Server's /etc/issue & /etc/issue.net"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/issue* -type f -print -exec cat {} \;
                       echo -e "Server's FS related Below Configuartion Files"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       ls -l /etc/*tab
                       echo -e "\n"
                       find /etc/*tab -type f -print -exec cat {} \;
                       echo -e "\n"
                       echo -e "Server's mtools.conf File's Backup"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/mtools.conf -type f -print -exec cat {} \;
                       echo -e "\n"
                       echo -e "Server's Users' Related File's Backup"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       echo -e "\n"
                       find /etc/group -type f -print -exec cat {} \;
                       echo -e "\n"
@@ -131,27 +131,27 @@
     register: Configuartion_Files
   - name: Taking Log Related All Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ Logrotate Configuartion ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ Logrotate Configuartion ################\n"
                       echo -e "Server's All Log Realted Configuration Files"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/logrotate.* -type f -print -exec cat {} \;
                       echo -e "List of All Logrotate Configuartion Files"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       ls -l /etc/logrotate.*
                       ls -l /etc/rsys*
                       echo -e "\n\n"
                       echo -e "Rsyslog Backup Files"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~\n"
                       find /etc/rsys* -type f -print -exec cat {} \;
                       echo -e "\n#################################################################\n"
     register: Logrotate_Configuartion
   - name: Taking Servers FileSystems Utilization Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ FileSystems Utilization ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ FileSystems Utilization ################\n"
                       echo -e "Filesystems Utilizatio (df -h)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       df -h
                       echo -e "\n\n"
                       df -mT
@@ -170,52 +170,52 @@
     register: FileSystems_Utilization
   - name: Taking Servers Packages and Services Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ Packages (Installed) ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ Packages (Installed) ################\n"
                       echo -e "Server's Installed Packages"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       rpm -qa; rpm -qa | wc -l
                       echo -e "\n\n"
                       echo -e "Server's Installed Packages(Date/Time Wise)"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       rpm -qa --last
                       echo -e "\n"
                       echo -e "Server's  List duplicated packages"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       rpm -qa -dupes
                       echo -e "\n\n"
                       echo -e "Server's List of All Services"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       service --status-all
                       echo -e "\n\n"
                       echo -e "Services as per Runlevel"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       chkconfig --list                     
                       echo -e "\n#################################################################\n"
     register: Packages_Installed
   - name: Taking YUM Configuartion Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ YUM Configuartion ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ YUM Configuartion ################\n"
                       yum repolist
                       echo -e "\n"
                       find /etc/yum.* -type f -print -exec cat {} \;
                       echo -e "\n"
                       echo -e "Server's Installed Packages"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       yum list installed
                       echo -e "Server's Recent Activity from YUM"
-                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                       taill -100 /var/log/yum.log
                       echo -e "\n#################################################################\n"
     register: YUM_Configuartion
   - name: Taking Servers Sudoers Information
     shell: |
-                      echo -e "###############################################################"
-                      echo -e "################ Sudoers Configuartion ################"
+                      echo -e "\n###############################################################\n"
+                      echo -e "\n################ Sudoers Configuartion ################\n"
                       find /etc/sudo* -type f -print -exec cat {} \;
                       echo -e "\n"
-                      echo -e "#################################################################"
+                      echo -e "\n#################################################################\n"
     register: Sudoers_Configuartion
   - name: Creating System Sudoers_Configuartion Backup File
     copy:
@@ -268,8 +268,7 @@
   - name: Creating System CPU_Utilization Backup File
     copy:
         content: "{{ CPU_Utilization.stdout }}"
-        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/CPU_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
-        mode: '0755'
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/CPU_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}        mode: '0755'
         
   - name: Creating System Server_Details Backup File
     copy:
