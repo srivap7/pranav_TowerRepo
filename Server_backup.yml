@@ -1,6 +1,7 @@
 ---
 - name: Creating Backup Of Servers
   hosts: all
+  become: true
   tasks:
   - name: Creating Backup Folder
     file:
