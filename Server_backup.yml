@@ -222,56 +222,49 @@
         content: "{{ Sudoers_Configuartion.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Sudoers_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System YUM_Configuartion Backup File
     copy:
         content: "{{ YUM_Configuartion.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/YUM_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System Packages_Installed Backup File
     copy:
         content: "{{ Packages_Installed.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Packages_Installed_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System Logrotate_Configuartion Backup File
     copy:
         content: "{{ Logrotate_Configuartion.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Logrotate_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System Configuartion_Files Backup File
     copy:
         content: "{{ Configuartion_Files.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Configuartion_Files_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System init_d_Files Backup File
     copy:
         content: "{{ init_d_Files.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/init_d_Files_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System FileSystems_Utilization Backup File
     copy:
         content: "{{ FileSystems_Utilization.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/FileSystems_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System Memory_Utilization Backup File
     copy:
         content: "{{ Memory_Utilization.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Memory_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
-        
   - name: Creating System CPU_Utilization Backup File
     copy:
         content: "{{ CPU_Utilization.stdout }}"
-        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/CPU_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}        mode: '0755'
-        
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/CPU_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
   - name: Creating System Server_Details Backup File
     copy:
         content: "{{ Server_Details.stdout }}"
         dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Server_Details_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
         mode: '0755'
+
