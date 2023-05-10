@@ -51,6 +51,7 @@
                       ps -aN --format cmd,pid,user,ppid
                       echo -e "\n"
                       echo -e "#################################################################"
+    register: CPU_Utilization
   - name: Taking Memory Information
     shell: |
                       echo -e "###############################################################"
