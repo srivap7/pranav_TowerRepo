@@ -1,0 +1,276 @@
+---
+- name: Creating Backup Of Servers
+  hosts: all
+  tasks:
+  - name: Creating Backup Folder
+    file:
+        path: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        state: directory
+  - name: Taking Servers Information
+    shell: |
+                      echo -e "\n################ Server Details ################\n"
+                      echo -e "\nServer's uptime\n"
+                      uptime
+                      echo -e "Kernel Version"
+                      echo -e "~~~~~~~~~~~~~~~"
+                      uname -r
+                      uname -a
+                      echo -e "Server's Hostname"
+                      echo -e "~~~~~~~~~~~~~~~~~~"
+                      hostname
+                      echo -e "\n";
+                      echo -e "\nOS Version"
+                      echo -e "~~~~~~~~~~~~"
+                      find /etc/redhat-release -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/os-release -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "\n#################################################################\n"
+    register: Server_Details
+  - name: Taking CPU Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ CPU Utilization ################"
+                      echo -e "Server's CPU State(vmstat)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~"
+                      vmstat
+                      echo -e "\n"
+                      echo -e "\n"
+                      echo -e "Server's All Running Proccess (ps -ef)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      ps -ef
+                      echo -e "\n"
+                      echo -e "Server's All Proccess (ps -aux)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      ps aux
+                      echo -e "\n"
+                      echo -e "Server's All Proccess (ps -aN --format cmd,pid,user,ppid)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      ps -aN --format cmd,pid,user,ppid
+                      echo -e "\n"
+                      echo -e "#################################################################"
+  - name: Taking Memory Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ Memory Utilization ################"
+                      echo -e "Server's All Memory Status (free -h)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      free -h
+                      echo -e "\n"
+                      echo -e "Server's All Memory Status (free -g)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      free -g
+                      echo -e "\n"
+                      echo -e "Server's All Memory Status (free -m)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      free -m
+                      echo -e "\n"
+                      echo -e "Server's All Memory Status (free -b)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      free -b
+                      echo -e "\n"
+                      echo -e "#################################################################\n"
+    register: Memory_Utilization
+  - name: Taking Servers Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ init.d Files ################"
+                      echo -e "Server's init.d Backup (Path: /etc/init.d/*)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "\n"
+                      find /etc/init.d/ -type f -print
+                      echo -e "\n"
+                      echo -e "\n"
+                      find /etc/init.d/* -type f -print -exec cat {} \;
+                      echo -e "#################################################################"
+    register: init_d_Files
+  - name: Taking Configuration Files Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ Configuartion Files ################"
+                      echo -e "Server's Hostname, Host.conf and Hosts Files Backup"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/host* -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "Server's Resolve Conf"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/resolv.conf -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "Server's /etc/issue & /etc/issue.net"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/issue* -type f -print -exec cat {} \;
+                      echo -e "Server's FS related Below Configuartion Files"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      ls -l /etc/*tab
+                      echo -e "\n"
+                      find /etc/*tab -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "Server's mtools.conf File's Backup"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/mtools.conf -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "Server's Users' Related File's Backup"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      echo -e "\n"
+                      find /etc/group -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/nologin -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/passwd -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/rpmrc -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/securetty -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/usertty -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      find /etc/shadow -type f -print -exec cat {} \;
+    register: Configuartion_Files
+  - name: Taking Log Related All Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ Logrotate Configuartion ################"
+                      echo -e "Server's All Log Realted Configuration Files"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/logrotate.* -type f -print -exec cat {} \;
+                      echo -e "List of All Logrotate Configuartion Files"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      ls -l /etc/logrotate.*
+                      ls -l /etc/rsys*
+                      echo -e "\n\n"
+                      echo -e "Rsyslog Backup Files"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~"
+                      find /etc/rsys* -type f -print -exec cat {} \;
+                      echo -e "\n#################################################################\n"
+    register: Logrotate_Configuartion
+  - name: Taking Servers FileSystems Utilization Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ FileSystems Utilization ################"
+                      echo -e "Filesystems Utilizatio (df -h)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      df -h
+                      echo -e "\n\n"
+                      df -mT
+                      echo -e "\n\n"
+                      df -iT
+                      echo -e "\n\n"
+                      mount
+                      echo -e "\n\n"
+                      find /proc/mounts -type f -print -exec cat {} \;
+                      echo -e "\n\n"
+                      find /etc/fstab -type f -print -exec cat {} \;
+                      echo -e "\n\n"
+                      find /etc/mtab -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "\n#################################################################\n"
+    register: FileSystems_Utilization
+  - name: Taking Servers Packages and Services Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ Packages (Installed) ################"
+                      echo -e "Server's Installed Packages"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      rpm -qa; rpm -qa | wc -l
+                      echo -e "\n\n"
+                      echo -e "Server's Installed Packages(Date/Time Wise)"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      rpm -qa --last
+                      echo -e "\n"
+                      echo -e "Server's  List duplicated packages"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      rpm -qa -dupes
+                      echo -e "\n\n"
+                      echo -e "Server's List of All Services"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      service --status-all
+                      echo -e "\n\n"
+                      echo -e "Services as per Runlevel"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~"
+                      chkconfig --list                     
+                      echo -e "\n#################################################################\n"
+    register: Packages_Installed
+  - name: Taking YUM Configuartion Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ YUM Configuartion ################"
+                      yum repolist
+                      echo -e "\n"
+                      find /etc/yum.* -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "Server's Installed Packages"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      yum list installed
+                      echo -e "Server's Recent Activity from YUM"
+                      echo -e "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                      taill -100 /var/log/yum.log
+                      echo -e "\n#################################################################\n"
+    register: YUM_Configuartion
+  - name: Taking Servers Sudoers Information
+    shell: |
+                      echo -e "###############################################################"
+                      echo -e "################ Sudoers Configuartion ################"
+                      find /etc/sudo* -type f -print -exec cat {} \;
+                      echo -e "\n"
+                      echo -e "#################################################################"
+    register: Sudoers_Configuartion
+  - name: Creating System Sudoers_Configuartion Backup File
+    copy:
+        content: "{{ Sudoers_Configuartion.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Sudoers_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System YUM_Configuartion Backup File
+    copy:
+        content: "{{ YUM_Configuartion.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/YUM_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System Packages_Installed Backup File
+    copy:
+        content: "{{ Packages_Installed.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Packages_Installed_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System Logrotate_Configuartion Backup File
+    copy:
+        content: "{{ Logrotate_Configuartion.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Logrotate_Configuartion_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System Configuartion_Files Backup File
+    copy:
+        content: "{{ Configuartion_Files.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Configuartion_Files_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System init_d_Files Backup File
+    copy:
+        content: "{{ init_d_Files.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/init_d_Files_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System FileSystems_Utilization Backup File
+    copy:
+        content: "{{ FileSystems_Utilization.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/FileSystems_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System Memory_Utilization Backup File
+    copy:
+        content: "{{ Memory_Utilization.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Memory_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System CPU_Utilization Backup File
+    copy:
+        content: "{{ CPU_Utilization.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/CPU_Utilization_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
+        
+  - name: Creating System Server_Details Backup File
+    copy:
+        content: "{{ Server_Details.stdout }}"
+        dest: /root/Configuartion_Backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}/Server_Details_{{ inventory_hostname }}_{{ ansible_date_time.iso8601 }}
+        mode: '0755'
