@@ -1,0 +1,207 @@
+---
+# tasks file for rhel7-8_upgrade/
+      - name: run preupgrde 7-8
+        shell: echo Y | leapp preupgrade --target 8.6 > /tmp/RHEL7-8_Pre_upg_rhel7
+        ignore_errors: true
+
+
+      - name: Analyze the finale pre-upgrade report
+        command: cat /tmp/pre_upg_rhel7
+
+      - name: Let us check the pre-upgrade output
+        pause:
+            minutes: 1
+
+
+###################################################################################
+######## Fixing eth files rename and answer_file content#######################################
+
+      - name: taking bakup of 70-persistent file.
+        copy:
+          src: /etc/udev/rules.d/70-persistent-net.rules
+          dest: /home/osadmin/70-persistent-net.rules_bkp
+          remote_src: yes
+        ignore_errors: true
+
+      - name: remove 70-persistent file
+        file:
+          path: /etc/udev/rules.d/70-persistent-net.rules
+          state: absent
+
+
+      - name: create script to get new net.rules file
+        copy:
+          content: |
+                    #!/bin/bash
+                    for i in `ip a | awk '{print $2}'| grep -A 1 eth |tr -s '\n' ' ' |sed 's/--/XYZ/g' |tr -s 'XYZ' '\n' | awk '{print $1 " " $2}' | sed 's/: /-/g'`
+                    do
+                    echo '# PCI device 0x15ad:0x07b0 (vmxnet3)' >> /etc/udev/rules.d/70-persistent-net.rules
+                    eth=`echo $i|awk -F '-' '{print$1}'|sed 's/myeth/eth/g' |sed 's/eth/myeth/g'`
+                    mac=`echo $i|awk -F '-' '{print$2}'`
+                    echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"$mac\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"$eth\" " >> /etc/udev/rules.d/70-persistent-net.rules
+                    done
+          dest: /tmp/udev.sh
+          mode: 0775
+
+      - name: run udev rules
+        shell: sh /tmp/udev.sh
+
+      - file:
+          path: /tmp/udev.sh
+          state: absent
+                
+##########################################################################
+
+
+      - name: put answer in file
+        copy:
+          dest: /var/log/leapp/answerfile
+          content: |
+                  [remove_pam_pkcs11_module_check]
+                  # Title:              None
+                  # Reason:             Confirmation
+                  # =================== remove_pam_pkcs11_module_check.confirm ==================
+                  # Label:              Disable pam_pkcs11 module in PAM configuration? If no, the upgrade process will be interrupted.
+                  # Description:        PAM module pam_pkcs11 is no longer available in RHEL-8 since it was replaced by SSSD.
+                  # Reason:             Leaving this module in PAM configuration may lock out the system.
+                  # Type:               bool
+                  # Default:            None
+                  # Available choices: True/False
+                  confirm = True
+                  #
+                  [authselect_check]
+                  # Title:              None
+                  # Reason:             Confirmation
+                  # ========================== authselect_check.confirm =========================
+                  # Label:              Configure PAM and nsswitch.conf with the following authselect call? authselect select sssd with-fingerprint with-mkhomedir with-sudo --force
+                  # Description:        If yes, suggested authselect profile will be applied on your system to generate PAM and nsswitch.conf configuration. If no, current configuration will be kept intact.
+                  # Reason:             There is a new tool called authselect in RHEL8 that replaced authconfig which is used to manage authentication (PAM) and identity (nsswitch.conf) sources. It is recommended to switch to this tool.
+                  # Type:               bool
+                  # Default:            True
+                  # Available choices: True/False
+                  confirm = True
+
+
+
+      - name: Create script to rename eth file and content
+        copy:
+          content: |
+                    #!/bin/bash
+                    path="/etc/sysconfig/network-scripts"
+                    grp="ifcfg-eth"
+                    for i in `ls $path/| grep $grp`
+                    do
+                    p=${i: -1}
+                    cp -f $path/$i /tmp/
+                    cp -f $path/route-eth$p /tmp/
+                    sed -i "s/eth/myeth/" $path/$i
+                    mv -- "$path/$i" "$path/${i/eth/myeth}"
+                    ##mv -f $path/$i $path/ifcfg-myeth$p
+                    sed -i "s/eth/myeth/" $path/route-eth$p
+                    mv -f $path/route-eth$p $path/route-myeth$p
+                    done
+          dest: /tmp/eth_conf.sh
+          mode: '0775'
+
+      - name: Runing eth_conf script
+        shell: sh /tmp/eth_conf.sh
+        ignore_errors: true
+      
+      - name: removing eth_conf.sh
+        file:
+          path: /tmp/eth_conf.sh
+          state: absent 
+
+      - name: Checking ethernet conf
+        shell: |
+                ls -l /etc/sysconfig/network-scripts | grep "ifcfg-"
+                cat /etc/sysconfig/network-scripts/ifcfg-myeth* | egrep -i "NAME|DEVICE"
+        register: new_eth_conf
+        ignore_errors: True
+
+      - name: Displying the New Eth configuration
+        debug:
+            msg: "{{ new_eth_conf }}"
+
+      - name: Rebooting Server to get new network configuration
+        reboot:
+            msg: "Rebooting Server to get new network configuration"
+
+##############################################################################
+##############################################################################
+
+      - name: create backup folder for pam.d
+        file: 
+          path: /tmp/pam.d_bkp/
+          state: directory
+
+      - name: copy pam.d files in /tmp/pam.d_bkp backup folder
+        copy:
+          src: /etc/pam.d/
+          dest: /tmp/pam.d_bkp/
+          remote_src: true
+      
+      - name: find the files under pam.d folder
+        find:
+          paths: /etc/pam.d/
+          patterns: '*'
+        register: out
+
+
+      - name: removing the 'pam_tally2'line from system-auth & other files if found
+        lineinfile:
+          path: "{{ item.path }}"
+          regexp: 'pam_tally2'
+          state: absent
+        with_items: "{{ out.files }}"
+
+      
+      - name: get the info of devel kernel
+        shell: cat /var/log/leapp/leapp-report.txt | grep kernel-devel | grep command |awk '{print $5}'
+        register: devel_info
+
+      - name: remove devel package if found
+        yum:
+          name: "{{ devel_info.stdout }}"
+          state: absent
+        when: devel_info.stdout != ''
+
+
+      - name: Removing unwanted module
+        shell: |
+                rmmod floppy
+                rmmod pata_acpi
+        ignore_errors: yes
+
+      - name: Running pre-upgrade after fixing the reported issues.
+        shell: |
+                echo Y | leapp preupgrade --target 8.6 > /tmp/preupg_afterfix_issue
+        ignore_errors: yes
+
+      - name: Displying the fresh report
+        command: cat /tmp/preupg_afterfix_issue
+        register: upgrade_7_8
+
+      - name: Pause to read final report
+        pause:
+            minutes: 1
+
+      - name: Running final upgrade from rhel7 to rhel8
+        shell: |
+                echo Y | leapp upgrade --target 8.6  > /tmp/RHEL7-8_final_upgrade_report
+        ignore_errors: yes
+
+      - name: final output after upgrade
+        command: cat /tmp/RHEL7-8_final_upgrade_report
+        register: final_report7_8
+
+      - name: get confirmation is for reboot
+        fail:
+          msg: Due to some issue upgrade has not happend
+        when:  final_report7_8.stdout.find('Please reboot your system.')  == -1
+
+      - name: Rebooting Server after upgrade 7 to 8
+        reboot:
+           msg: Servers is getting reboot to Become RHEL8
+           reboot_timeout: 2400
+

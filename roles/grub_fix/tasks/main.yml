@@ -1,0 +1,55 @@
+---
+# tasks file for grub_fix
+############Fixing grub before final upgrade RHEL7 to RHEL8 #####################
+      - name: Register the server with PCS Satellite server for Migration repo.
+        redhat_subscription:
+          state: present
+          activationkey: 'ak_BLKIBM0002_RHEL_Migration'
+          org_id: 'ABNAMRO'
+          force_register: yes
+        ignore_errors: true 
+
+
+#      - name: Registering RHEL7 with Satelite servers
+#        shell: subscription-manager register --org="ABNAMRO" --activationkey="ak_BLKIBM0002_RHEL_Migration" --force
+#        ignore_errors: yes
+
+
+      - name: Display Message
+        debug:
+          msg: In next step we are going to fix GRUB settings as per RHEL8
+
+      - name: Updating GRUB File
+        command: cat /proc/cmdline
+        register: cmdline
+
+      - name: creating grub file
+        copy:
+          content: |
+                GRUB_TIMEOUT=5
+                GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+                GRUB_DEFAULT=saved
+                GRUB_DISABLE_SUBMENU=true
+                GRUB_TERMINAL_OUTPUT="console"
+                GRUB_CMDLINE_LINUX="{{ cmdline.stdout }}"
+                GRUB_DISABLE_RECOVERY="true"
+          dest: /etc/default/grub
+
+      - name: get the boot name info
+        shell: df -h /boot/| tail -1 | awk '{print $1}' | rev | cut -c2-| rev
+        register: boot_name
+
+      - name: Installing Grub
+        shell: |
+          grub2-install "{{ boot_name.stdout }}"
+          grub2-mkconfig -o /boot/grub2/grub.cfg
+
+      - name: Rebooting Servers
+        reboot:
+          msg: Server is going to Reboot!!!
+
+      - name: server has come up after reboot.
+        debug:
+          msg: Server has come up after reboot.
+
+###############################################################################

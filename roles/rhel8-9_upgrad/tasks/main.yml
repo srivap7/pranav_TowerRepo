@@ -1,0 +1,26 @@
+---
+# tasks file for rhel8-9_upgrad
+- name: Running Upgrade
+  shell: |
+          leapp upgrade > /tmp/RHEL8-9_Upgrade.txt
+
+- name: checkking file
+  shell: |
+          cat /tmp/RHEL8-9_Upgrade.txt | grep 'reboot your system'
+  register: final
+
+- name: Reboot
+  reboot:
+  when: final.rc == 0
+
+- name: Register redhat  Register the server with PCS Satellite server for PR Environment
+  redhat_subscription:
+          state: present
+          username: srivap7
+          password: Thegreat@123
+
+- name: Yum Update
+  dnf:
+          name: '*'
+          state: present
+

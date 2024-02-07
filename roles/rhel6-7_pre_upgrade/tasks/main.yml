@@ -1,0 +1,67 @@
+---
+# tasks file for rhel6-7_pre_upgrade/
+########################################################################
+####### Preparing for pre-upgrade from rhel6 to rhel7###################
+
+      - name: Display Message
+        debug:
+          msg: Preparing for Upgradation from RHEL6 to RHEL7
+
+
+      - name: copy ISO file to root
+        copy:
+          src: /osadmin/RHEL-7.iso
+          dest: /root/
+          remote_src: yes
+          mode: 0644
+
+      - name: copy mig tar file to /tmp
+        copy:
+          src: /osadmin/tmp_mig.tar.xz
+          dest: /tmp/
+          remote_src: yes
+
+
+      - name: untar migration folder
+        unarchive:
+          src: /tmp/tmp_mig.tar.xz
+          dest: /tmp/
+          remote_src: yes
+        tags: unzip
+
+      - name: create repo file for mig folder
+        yum_repository:
+          name: mig-folder
+          description: migration folder
+          enabled: yes
+          baseurl: file:///tmp/tmp_mig/
+        tags: mig_repo
+
+      - name: Uninstalling road-block packages
+        yum:
+          name:
+            - gnome-desktop
+            - mdatp
+            - mde-netfilter
+            - gok
+            - groff-base
+            - java
+          state: absent
+
+      - name: install upgrade assistanse packages
+        yum:
+          name:
+            - preupgrade-assistant
+            - preupgrade-assistant-ui
+            - preupgrade-assistant-el6toel7
+            - preupgrade-assistant-el6toel7-data
+            - redhat-upgrade-tool
+          state: present
+
+      - name: Modifying pre-upgrade assistanse file
+        blockinfile:
+          path: /etc/preupgrade-assistant.conf
+          block: |
+              [xccdf_preupg_rule_system_BinariesRebuild_check]
+              exclude_file=/root/exclude
+

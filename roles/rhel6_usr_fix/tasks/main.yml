@@ -1,0 +1,53 @@
+---
+# tasks file for rhel6_usr_fix/
+      - name: Creating USR NEW
+        file:
+          path: /usr_new
+          mode: '0755'
+          state: directory
+
+      - name: Copy Data usr to usrnew
+        shell: rsync -al /usr/ /usr_new
+
+
+      - name: Get usr entry from fstab
+        shell: cat /etc/fstab | grep /usr | head -1 |awk '{print $1}'
+        register: usr_fs
+
+      - name: Bckup fstab
+        shell: cp -p /etc/fstab /etc/fstab.save
+      
+      
+      - name: taking backup of inittab file
+        shell: cp -p /etc/inittab /tmp/inittab.bkp
+
+      - name: editing inittab to get single usermode
+        shell: sed -i 's/id:3/id:1/' /etc/inittab 
+
+
+      - name: commenting out the usr
+        replace:
+          path: /etc/fstab
+          regexp: '^{{ usr_fs.stdout }}'
+          replace: '#{{usr_fs.stdout }}'
+
+      - name: Creating rc1.d script
+        copy:
+          content: |
+                  #!/bin/bash
+                  mv /usr /usr2  
+                  mv /usr_new /usr
+                  cp -p /tmp/inittab.bkp /etc/inittab 
+                  rm -rf /etc/rc1.d/S05usr
+                  reboot
+          dest: /etc/rc1.d/S05usr
+          mode: '0755'
+
+      - name: Booting to fix usr file system
+        reboot:
+          
+
+      - name: pause the playbook until get /usr fixed in single user mode
+        pause:
+          minutes: 2
+

@@ -1,0 +1,17 @@
+---
+# tasks file for rhel6_root_fix
+      - name: geting root vg name
+        shell: df /root | awk -F '/' '{print $4}' |tr -d '\n' |awk -F '-' '{print $1}'
+        register: vg_name
+
+      - name: getting root lv name
+        shell: df  /root | awk -F '/' '{print $4}' |tr -d '\n' |awk -F '-' '{print $2}'
+        register: lv_name
+
+      - name: Extend Root FS
+        lvol:
+          vg: "{{ vg_name.stdout }}"
+          lv: "{{ lv_name.stdout }}"
+          size: 9g
+          resizefs: true
+          force: yes

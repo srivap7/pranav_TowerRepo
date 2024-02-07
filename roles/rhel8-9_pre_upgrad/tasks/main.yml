@@ -1,0 +1,33 @@
+---
+# tasks file for rhel8-9_pre_upgrad
+- name: Update All Packages
+  dnf:
+          state: latest
+          name: '*'
+
+- name: Reboot
+  reboot:
+
+- name: Installing Leapp
+  dnf:
+          name: leapp
+          state: latest
+
+- name: leapp PreUpgrade
+  shell: |
+          leapp preupgrade > /tmp/RHEL8-9_Preupgrade
+
+- name: Configure Firewalld and answer file
+  shell: |
+         sed -i s/^AllowZoneDrifting=.*/AllowZoneDrifting=no/ /etc/firewalld/firewalld.conf
+         leapp answer --section check_vdo.confirm=True
+         rm -rf /root/tmp_leapp_py3
+  ignore_errors: True
+
+- name:  installing VDO
+  dnf:
+          name: vdo
+          state: present
+
+
+

@@ -1,0 +1,9 @@
+---
+  - name: RHEL7 to RHEL8 UPgrade
+    hosts: all
+    become: true
+    roles:
+      - roles/grub_fix
+      - roles/rhel7-8_pre_upgrade
+      - roles/rhel7-8_upgrade
+      - roles/rhel7-8_post_upgrade

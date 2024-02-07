@@ -1,0 +1,115 @@
+---
+- name: Fixing Booing Issue Via Ansible Tower
+  hosts: all
+  become: true
+  tasks:
+  - name: Checking Disk is in User ot Not?
+    shell: |
+            pvs | grep "{{ Disk_Name }}"
+            mount | grep "{{ Disk_Name }}"
+            ls -l /boot > /dev/null
+    register: mount_disk
+  - name: Checking Disk is Added or not
+    shell: ls -ltrh "{{ Disk_Name }}"
+    ignore_errors: yes
+    register: stat_disk
+  - name: Failed if Disk "{{ Disk_Name }}" is already in Use
+    fail:
+            msg: "{{ Disk_Name }} is already in use \n {{ mount_disk.stdout }}"
+    when: mount_disk.stdout != ''
+  - name: Failed if Disk "{{ Disk_Name }}" is not Avaible...
+    fail:
+            msg: "{{ Disk_Name }} is not Available !!! \n \t Please check Again!!!"
+    when: stat_disk.stdout == ''
+  - name: Creating Partition in Newly added Disk "{{ Disk_Name }}" on "{{ inventory_hostname }}"
+    parted:
+            device: "{{ Disk_Name }}"
+            number: 1
+            state: present
+            part_type: primary
+            part_end: "100%"
+  - name: Geeting Partition Name
+    shell: find /dev -type b | grep "{{ Disk_Name }}" | grep '1'
+    register: Partition_Name
+  - name: Formatting the Partition
+    filesystem:
+            dev: "{{ Partition_Name.stdout }}"
+            fstype: ext3
+  - name: Romving Boot Entry
+    shell: |
+            umount -lf /boot_New
+            rm -rf /boot_New
+  - name: Creating Boot Backup Dir
+    file:
+            name: /boot_New
+            state: directory
+            mode: '0755'
+  - name: Mounting "{{ Partition_Name.stdout }}" to /boot_New
+    mount:
+            fstype: ext3
+            src: "{{ Partition_Name.stdout }}"
+            path: /boot_New
+            state: mounted
+  - name: Copying Data to new Disk
+    shell: |
+            rsync -al /boot/ /boot_New
+  - name: Verify the Size of /boot
+    shell: du -sch /boot | grep boot | awk '{print$1}'| rev | cut -c2- | rev
+    register: oldBoot_Size
+  - name: Verify the Size of /boot_new
+    shell: du -sch /boot_New | grep boot_New | awk '{print$1}'| rev | cut -c2- | rev
+    register: newBoot_Size
+  - name: Print Both Boot Size
+    debug:
+            msg: |
+                    Please check the Size of Boot and New Boot...
+                    Boot Size
+                    ==========
+                    {{ oldBoot_Size.stdout }}
+                    New Boot Size
+                    =============
+                    {{ newBoot_Size.stdout }}
+  - name: Installing Grub
+    shell: |
+             grub2-install "{{ Disk_Name }}"
+  - name: Making Grup Configuration
+    shell: |
+             grub2-mkconfig -o /boot/grub2/grub.cfg
+  - name: Un-Mounting "{{ Partition_Name.stdout }}" from /boot_New
+    mount:
+            path: /boot_New
+            state: unmounted
+  - name: Taking FSTAB backup
+    copy:
+           src: /etc/fstab
+           dest: /etc/fstab_{{ansible_date_time.iso8601}}
+           remote_src: yes
+  - name: Getting Old Boot Entry from /etc/fstab
+    shell: |
+           cat /etc/fstab| grep -v '#'| grep boot | awk '{print$1}'
+    register: Old_Boot
+  - name: Commenting Out Old Boot Entry from /etc/fstab
+    replace:
+            regexp: '^{{ item }}'
+            replace: '# {{ item }}'
+            path: /etc/fstab
+            backup: yes
+    loop: "{{ Old_Boot.stdout_lines }}"        
+  - name: Getting blkid for "{{ Partition_Name.stdout }}"
+    shell: |
+            blkid "{{ Partition_Name.stdout }}" | awk '{print$2}' | awk -F '\"' '{print$1$2}'
+    register: new_Boot
+  - name: Adding New Entry in FSTAB
+    lineinfile:
+            path: /etc/fstab
+            insertafter: '# {{ Old_Boot.stdout }}'
+            line: "{{ new_Boot.stdout }} \t /boot \t ext3 \t defaults \t 1  2"
+            state: present
+            backup: yes
+  - name: Print Next Action Plan!
+    debug:
+            msg: |
+                    " Team, Please reboot the machine Manually 
+                    and 
+                    set the Boot Order in BIOS as per New Boot Disk...
+                                                         Thank You!!!"

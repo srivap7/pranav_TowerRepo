@@ -1,0 +1,108 @@
+---
+# tasks file for rhel6-7_post_upgrade
+#######################################################################################
+########### getting updates after migration from rhel7.6 to 7.9 ##############################
+
+      - name: getting updates after migration from rhel6 to rhel7
+        debug:
+          msg: getting updates after migration from rhel6 to rhel7
+
+
+      - name: Creating Backup Folder
+        file:
+          path: /etc/yum.repos.d/rhel6_backup
+          state: directory
+          mode: '0755'
+
+      - name: Moving RHEL6 Repofiles Files
+        copy:
+          src: /etc/yum.repos.d/
+          dest: /etc/yum.repos.d/rhel6_backup/
+          remote_src: yes
+
+
+      - name: find files
+        find:
+          paths: /etc/yum.repos.d/
+          patterns: "*.repo"
+          hidden: yes
+        register: out
+
+
+      - name: remove old repo files
+        file:
+          path: "{{ item.path }}"
+          state: absent
+        with_items: "{{ out.files }}"
+        loop_control:
+             label: "{{ item.path }}"
+
+#############################################################################
+
+      - name: Register the server with PCS Satellite server for PR Environment
+        redhat_subscription:
+                state: present
+                username: srivap7
+                password: Thegreat@123
+    
+      - name: Cleaning yum repo and regenerating repos
+        shell: |
+          yum clean all
+          yum repolist all
+
+#########################################################################################
+      - name: check conflicts packages during yum update
+        shell: |
+                echo Y | yum update |grep -i conflicts |awk '{print $10}' |uniq > /tmp/remove_pkg
+                echo Y | yum update  | grep "missing requires" | awk '{print $1}' |uniq >> /tmp/remove_pkg
+        register: package_remove
+
+      - name: display the conflicts packages
+        debug:
+          msg: "{{ package_remove }}"
+
+
+      - name: creating script to remove the confilt packages
+        copy:
+          content: |
+                    #!/bin/bash
+                    for i in `cat /tmp/remove_pkg | grep -i el6`
+                    do
+                      yum remove -y $i
+                    done
+          dest: /tmp/pkg_remove.sh
+          mode: 0755
+
+      - name: run script to remove confilict packages
+        command: sh /tmp/pkg_remove.sh
+
+      - name: update all remaining packages
+        yum:
+          name: '*'
+          state: latest
+##############################################################################################
+##############################################################################################
+      - name: remove scrtipt 
+        file:
+          path: /tmp/pkg_remove.sh
+          state: absent
+
+      - name: get the latest version of rhel7
+        command: cat /etc/redhat-release
+        register: version
+
+      - name: reboot server after update
+        reboot:
+          msg: Server is going to reboot after update package.
+          reboot_timeout: 1200
+        when: version.stdout.find('7.9 (Maipo)') != -1
+
+      - name: Server has come up after rhel7 fully updated
+        debug:
+          msg: Server has come up after reboot with rhel7 fully updated
+
+      - name: rhel7 ISO file need to remove if upgradation has successfully done.
+        file:
+          path: /root/RHEL-7.iso
+          state: absent
+

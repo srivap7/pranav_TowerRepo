@@ -1,0 +1,58 @@
+---
+  - name: In Place Upgrade from RHEL6 to RHEL7
+    hosts: all
+    become: true
+    tasks:
+      - name: Check USR FS
+        shell: df | grep "usr"| grep -v "usr/" | head -1 |awk '{print $1}'
+        register: usr_status
+
+      - name: Run role to fix /usr
+        include_role:
+                  name: roles/rhel6_usr_fix
+        when: usr_status.stdout != ""
+
+      - name: include pre_upgrade
+        include_role:
+                  name: roles/rhel6-7_pre_upgrade
+      
+      - name: include upgrade
+        include_role:
+                  name: roles/rhel6-7_upgrade
+
+      - name: include post role
+        include_role:
+                  name: roles/rhel6-7_post_upgrade
+      
+      - name: get the information if rhel6 to rhel7 upgrade done successfully
+        command: cat /etc/redhat-release
+        register: version
+
+      - name: get the boot size value
+        shell: df -m /boot | awk '{print $4}' | grep -v Avail
+        register: boot_size
+
+      - name: display the message if /boot is OK
+        debug:
+          msg: /boot is ok, Aailable space is "{{ boot_size.stdout }}MB"
+        when: "boot_size.stdout | int > 150"
+
+      - name: display the message if /boot is not OK
+        debug:
+          msg: /boot need to fix "{{ boot_size.stdout }}MB"
+        when: "boot_size.stdout | int < 150"
+
+      - name: failed if /boot space is less then 150
+        fail:
+          msg: Pls fix /boot size on "{{ inventory_hostname }}"
+        when: "boot_size.stdout | int < 150"
+      
+      - name: pause for 5 min after upgarded to rhel7
+        pause:
+          minutes: 5
+
+  - name: start next playbook to upgrade rhel7 to rhel8 if first playbook is completed successfully.
+    import_playbook: rhel7-8_upgrade.yml
+    when: version.stdout.find('7.9 (Maipo)') != -1
+    when: "boot_size.stdout | int > 150"
+

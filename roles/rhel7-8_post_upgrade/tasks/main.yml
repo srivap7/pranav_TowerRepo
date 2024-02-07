@@ -1,0 +1,77 @@
+---
+# tasks file for rhel7-8_post_upgrade/
+      - name: Display message
+        debug:
+          msg: Server has come up after upgradation from RHEL7 to RHEL8
+
+      - name: Need to fix python link
+        raw: |
+              if [ -f /usr/bin/python3 ] && [ ! -f /usr/bin/python ]; then
+              ln --symbolic /usr/bin/python3 /usr/bin/python; 
+              fi
+      - name: Creating Backup Folder
+        file:
+          path: /etc/yum.repos.d/rhel7_backup
+          state: directory
+          mode: '0644'
+      
+      - name: Moving RHEL7 Repofiles Files
+        copy:
+          src: /etc/yum.repos.d/
+          dest: /etc/yum.repos.d/rhel7_backup/
+          remote_src: yes
+
+
+      - name: find files
+        find:
+          paths: /etc/yum.repos.d/
+          patterns: "*.repo"
+          hidden: yes
+        register: out
+
+
+      - name: remove old repo files
+        file:
+          path: "{{ item.path }}"
+          state: absent
+        with_items: "{{ out.files }}"
+        loop_control:
+             label: "{{ item.path }}"
+
+
+      - name: Register the server with PCS Satellite server for PR Environment
+        redhat_subscription:
+          state: present
+          username: srivap7
+          password: Thegreat@123
+      
+      - name: Need to run  subscription command again
+        command: subscription-manager release --set 8
+        
+    
+      - name: Cleaning yum repo and regenerating repos
+        shell: |
+          yum clean all
+          yum repolist all
+
+      - name: update all packages for RHEL8
+        dnf:
+          name: '*'
+          state: latest
+
+      - name: Need to fix python link again after yum update.
+        raw: |
+              if [ -f /usr/bin/python3 ] && [ ! -f /usr/bin/python ]; then
+              ln --symbolic /usr/bin/python3 /usr/bin/python;
+              fi
+      
+      - name: Restart server after updated all packages
+        reboot:
+          msg: Server is going to reboot after updated RHEL8 packages
+          reboot_timeout: 1200
+
+      - name: dispaly Message after reboot
+        debug:
+          msg: Server has come up after applied updates for RHEL8
+
+#####################################################################################################

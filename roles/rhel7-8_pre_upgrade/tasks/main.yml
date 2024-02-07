@@ -1,0 +1,38 @@
+---
+# tasks file for rhel7-8_pre_upgrade/
+
+#################################################################################
+#########
+
+      - name: enabling extra packages repo
+        replace:
+          path: /etc/yum.repos.d/redhat.repo
+          regexp: 'enabled = 0'
+          replace: 'enabled = 1'
+
+      - name: Installing Leap
+        yum:
+          name: leapp
+          state: present
+
+      - name: remove groff 
+        yum:
+          name: groff*el6*
+          state: absent
+
+
+      - name: Copy Data from NFS
+        copy:
+          src: /osadmin/leapp-data-22.tar.gz
+          dest: /tmp
+          mode: '0755'
+          remote_src: Yes
+ 
+
+      - name: Unarchive /sds/local/sceplus/infra/LINUX/leapp-data-22.tar.gz
+        unarchive:
+          src: /tmp/leapp-data-22.tar.gz
+          dest: /etc/leapp/files/
+          remote_src: Yes
+
+

@@ -1,0 +1,46 @@
+---
+
+      - name: to run preupgrade
+        shell: yes | preupg > /tmp/RHEL6-7PreUpgrade.txt
+        register: preupg_status
+        ignore_errors: yes
+
+      
+      - name: to check and remove eth-rename script
+        file: 
+          path: /root/preupgrade/preupgrade-scripts/rename_network.sh
+          state: absent
+
+      - name: dispaly pre-upgrade stautus
+        command: cat /tmp/preupg6_out.txt
+
+
+      - name: Pausue the playbook to analyze the pre-upgrade report
+        pause:
+           minutes: 1
+
+      - name: Finally Upgradation from RHEL6 to RHEL7 Started
+        shell:  echo Y | redhat-upgrade-tool --iso /root/RHEL-7.6-20181010.0-Server-x86_64-dvd1.iso --cleanup-post > /tmp/RHEL6-7Upgrade.txt
+        
+      
+      - name: cat final upgrade report
+        shell: cat /tmp/RHEL6-7Upgrade.txt | grep "Reboot to start upgrade."
+        register: reboot_info 
+
+      - name: geting confirmation before reboot 
+        fail:
+          msg: Due to some issue upgrade has not happend
+        when:  reboot_info.stdout.find('Reboot to start upgrade.')  == -1
+      
+      - name: Rebooting Server to become rhel7 
+        reboot:
+          msg: |
+                  Server is going to reboot for upgradation...!!!
+                  It may take some time to boot with new OS Rhel7... Thank you...
+          reboot_timeout: 3600
+
+      - name: Server has come up after reboot
+        debug:
+          msg: Server has come up after reboot with New OS Rhel7... Thank you...
+
+#######################################################################################
