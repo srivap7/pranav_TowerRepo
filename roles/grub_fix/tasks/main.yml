@@ -38,4 +38,14 @@
         debug:
           msg: Server has come up after reboot.
 
+
+
+
+
+      - name: Register the server with PCS Satellite server for PR Environment
+        redhat_subscription:
+          state: present
+          username: srivap7
+          password: Thegreat@123
+
 ###############################################################################
