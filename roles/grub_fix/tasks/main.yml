@@ -1,19 +1,5 @@
 ---
 # tasks file for grub_fix
-############Fixing grub before final upgrade RHEL7 to RHEL8 #####################
-      - name: Register the server with PCS Satellite server for Migration repo.
-        redhat_subscription:
-          state: present
-          activationkey: 'ak_BLKIBM0002_RHEL_Migration'
-          org_id: 'ABNAMRO'
-          force_register: yes
-        ignore_errors: true 
-
-
-#      - name: Registering RHEL7 with Satelite servers
-#        shell: subscription-manager register --org="ABNAMRO" --activationkey="ak_BLKIBM0002_RHEL_Migration" --force
-#        ignore_errors: yes
-
 
       - name: Display Message
         debug:
