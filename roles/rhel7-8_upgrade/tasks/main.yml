@@ -6,7 +6,7 @@
 
 
       - name: Analyze the finale pre-upgrade report
-        command: cat /tmp/pre_upg_rhel7
+        command: cat /tmp/RHEL7-8_Pre_upg_rhel7
 
       - name: Let us check the pre-upgrade output
         pause:
