@@ -1,0 +1,17 @@
+---
+- name: Diff b/w Set_fact and Vars
+  hosts: localhost
+  vars:
+          username: 'Pranav'
+          user: "{{ lookup('file','/etc/passwd')}}"
+
+  tasks:
+          
+          - set_fact:
+                  user_name: "{{ lookup('file','/etc/passwd')}}"
+          - debug:
+                  msg: |
+                          "{{ username }}"
+                          "{{ user_name }}"
+                          "{{ user }}"
+

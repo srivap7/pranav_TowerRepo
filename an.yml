@@ -1,0 +1,31 @@
+---
+- name: Install Servers
+  hosts: localhost
+  become: true
+  become_method: sudo
+  become_user: root
+  handlers:
+          - name: Install Package
+            package:
+                    name: "{{pkg.stdout}}"
+                    state: latest
+          - name: Start Service
+            service:
+                    name: "{{ srv.stdout }}"
+                    state: restarted
+  tasks:
+          - name: install ftp
+            shell: echo 'ftp'
+            register: pkg
+            notify:
+                    - Install Package
+
+
+          - name: sssssssssssssssssssss
+            shell: echo 'sshd'
+            register: srv
+            changed_when: pkg.stdout != 'ftp'
+            notify:
+                    -  Start Service
+
+
